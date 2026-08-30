@@ -1,0 +1,20 @@
+# --- 產生的資料 / 快取 ---
+.demo-cache/
+demo-data.json
+__pycache__/
+*.pyc
+
+# --- 建置輸出（每次 build 都會重新產生，不需版控）---
+deploy/
+dist/
+shots/
+
+# --- 壓縮檔（Git 無法做差異比對，會不斷膨脹）---
+*.zip
+
+# --- 系統/編輯器 ---
+desktop.ini
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#05070c">
+<meta name="description" content="依 GPS 座標即時尋找附近景點的公開照片與簡介，橫向全螢幕輪播。">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<title>途中 Wayfarer · GPS 風景輪播</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<main id="stage">
+
+  <!-- 照片層（兩張交錯淡入淡出） -->
+  <div class="photo-layer">
+    <div class="photo" id="photoA"></div>
+    <div class="photo" id="photoB"></div>
+    <div class="scrim"></div>
+  </div>
+
+  <!-- 左上：GPS 狀態列 -->
+  <header id="hud">
+    <span class="dot" id="hud-dot"></span>
+    <div class="hud-lines">
+      <div id="hud-coords">等待定位…</div>
+      <div id="hud-place" class="dim"></div>
+      <div id="hud-motion" class="motion"></div>
+    </div>
+  </header>
+
+  <!-- 右側：照片簡介面板 -->
+  <aside id="panel">
+    <div class="panel-top">
+      <div id="p-kicker" class="kicker"></div>
+      <h1 id="p-title">尋找附近的風景…</h1>
+      <div id="p-meta" class="meta"></div>
+    </div>
+    <div class="panel-body" id="p-body"></div>
+    <div class="panel-foot">
+      <div id="p-credit" class="credit"></div>
+      <a id="p-source" class="source" target="_blank" rel="noopener noreferrer"></a>
+    </div>
+  </aside>
+
+  <!-- 底部控制列 -->
+  <nav id="controls">
+    <button id="btn-prev"  title="上一張">⟨</button>
+    <button id="btn-play"  title="播放／暫停">❚❚</button>
+    <button id="btn-next"  title="下一張">⟩</button>
+    <button id="btn-speed" title="切換間隔">15s</button>
+    <button id="btn-radius" title="搜尋半徑">10km</button>
+    <button id="btn-reload" title="重新搜尋附近">↻</button>
+    <button id="btn-full"  title="全螢幕">⛶</button>
+    <button id="btn-place" title="切換地點" hidden>⌖</button>
+    <span id="p-count" class="count"></span>
+  </nav>
+
+  <!-- 進度條 -->
+  <div id="progress"><i></i></div>
+
+  <!-- 開場／授權畫面 -->
+  <div id="boot">
+    <div class="boot-card">
+      <div class="boot-logo">途 中</div>
+      <p class="boot-sub">Wayfarer — 沿路的風景</p>
+      <p id="boot-msg">依你的 GPS 座標，尋找附近的旅遊勝地與風光，
+        每 15 秒換一張照片並附上簡介。橫向、直向都可以。</p>
+      <button id="boot-btn">開始定位</button>
+      <button id="boot-skip" hidden>直接瀏覽（不需定位）</button>
+      <p class="boot-note">
+        行進中會依速度與方向，往<b>前方</b>搜尋即將到達的風景。<br>
+        若在 App 內建瀏覽器被擋，點右上角分享圖示 → <b>在 Safari 中打開</b>，再按一次。<br>
+        照片與文字來源：Wikipedia / Wikimedia Commons（公開授權）
+      </p>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+</main>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "途中 Wayfarer · GPS 風景輪播",
+  "short_name": "途中",
+  "description": "依 GPS 座標尋找附近景點的公開照片與簡介，橫向全螢幕輪播。",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#05070c",
+  "theme_color": "#05070c"
+}
