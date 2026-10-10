@@ -230,19 +230,75 @@ def make_clip(cid, vin, lines, minlen=0.0, y_sub=690):
         "-crf", "22", "-preset", "medium", "-c:a", "aac", "-ar", "44100", "-ac", "2", "-b:a", "128k", out], check=True)
     return out, total
 
+
+# ---------- 概念動畫：一般找法 vs 途中往前方找 ----------
+def concept(path, dur=14.0):
+    TEAL = (111, 211, 192); AMB = (255, 200, 80); GRY = (105, 118, 132); WHT = (240, 244, 248); BG = (5, 7, 12)
+    rc = json.load(open(os.path.join(CAND, "route.json"), encoding="utf-8"))
+    thumbs = []
+    for idx in (33, 10, 7):
+        t = Image.open(rc[idx]["file"]).convert("RGB"); w, h = t.size; sq = min(w, h)
+        t = t.crop(((w - sq) // 2, (h - sq) // 2, (w + sq) // 2, (h + sq) // 2)).resize((60, 60))
+        m = Image.new("L", (60, 60), 0); ImageDraw.Draw(m).ellipse((0, 0, 59, 59), fill=255); thumbs.append((t, m))
+    f_t = font(40); f_l = font(30); f_s = font(26, False)
+    p = subprocess.Popen([FF, "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
+        "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "20", path], stdin=subprocess.PIPE)
+    def ease(v): v = max(0.0, min(1.0, v)); return v * v * (3 - 2 * v)
+    def road(d, x, y0, y1):
+        d.rectangle((x - 34, y0, x + 34, y1), fill=(34, 40, 50))
+        for yy in range(int(y0) + 6, int(y1) - 10, 36): d.rectangle((x - 2, yy, x + 2, yy + 18), fill=(120, 130, 140))
+    def car(d, x, y, col): d.polygon([(x, y - 24), (x + 17, y + 16), (x - 17, y + 16)], fill=col)
+    cx = 360
+    for f in range(int(dur * FPS)):
+        t = f / FPS; im = Image.new("RGB", (W, H), BG); d = ImageDraw.Draw(im)
+        d.text((W // 2, 62), "找風景的兩種方式", font=f_t, fill=WHT, anchor="mm")
+        # ---- 上格：一般（前後都找）----
+        ya0, ya1 = 110, 590; d.rounded_rectangle((30, ya0, W - 30, ya1), 16, outline=(40, 52, 66), width=2)
+        d.text((56, ya0 + 22), "一般：找你周圍", font=f_l, fill=AMB)
+        road(d, cx, ya0 + 60, ya1 - 14); cy = 360
+        d.ellipse((cx - 170, cy - 170, cx + 170, cy + 170), outline=(86, 160, 190), width=3); car(d, cx, cy, WHT)
+        for dx, dy in ((-80, -110), (90, -60), (-90, 70), (85, 125)):
+            d.ellipse((cx + dx - 12, cy + dy - 12, cx + dx + 12, cy + dy + 12), fill=TEAL)
+        if t > 1.5: d.text((56, 520), "身後的也找", font=f_s, fill=GRY, anchor="lm")
+        # ---- 下格：途中（往前方找）----
+        a = ease((t - 4.3) / 0.7)
+        if a > 0:
+            yb0, yb1 = 640, 1100; bx0, bx1 = 30, W - 30
+            imb = Image.new("RGB", (W, H), BG); db = ImageDraw.Draw(imb)         # 先畫在另一張，再裁成格子大小貼回，圈就不會超出格子
+            move = ease((t - 9.3) / 4.4) * 130; car_y = 1000 - move; circ_y = car_y - 150; r = 150
+            road(db, cx, yb0 + 60, yb1 - 14)
+            db.ellipse((cx - r, circ_y - r, cx + r, circ_y + r), outline=TEAL, width=3)
+            for dx, y, k in ((-95, 905, 0), (100, 830, 1), (-90, 760, 2)):
+                th, mk = thumbs[k]; passed = y > car_y + 8
+                imb.paste(th.convert("L").convert("RGB") if passed else th, (cx + dx - 30, y - 30), mk)
+                db.ellipse((cx + dx - 31, y - 31, cx + dx + 31, y + 31), outline=GRY if passed else TEAL, width=3)
+                if passed: db.text((cx + dx + (48 if dx > 0 else -48), y), "已通過", font=f_s, fill=GRY, anchor="lm" if dx > 0 else "rm")
+            car(db, cx, car_y, WHT)
+            ax = cx + 170
+            db.line((ax, car_y - 4, ax, circ_y + 6), fill=AMB, width=3); db.polygon([(ax, circ_y), (ax - 8, circ_y + 14), (ax + 8, circ_y + 14)], fill=AMB)
+            db.text((ax + 14, (car_y + circ_y) // 2), "速度", font=f_s, fill=AMB, anchor="lm"); db.text((ax + 14, (car_y + circ_y) // 2 + 30), "×45秒", font=f_s, fill=AMB, anchor="lm")
+            db.text((56, 1065), "身後的不找", font=f_s, fill=GRY, anchor="lm")
+            box = (bx0, yb0, bx1, yb1); im.paste(Image.blend(Image.new("RGB", (bx1 - bx0, yb1 - yb0), BG), imb.crop(box), a), (bx0, yb0)); d = ImageDraw.Draw(im)
+            d.rounded_rectangle((bx0, yb0, bx1, yb1), 16, outline=(int(40 + 71 * a), int(52 + 159 * a), int(66 + 126 * a)), width=2)
+            d.text((56, yb0 + 22), "途中：往前方找", font=f_l, fill=TEAL)
+        p.stdin.write(im.tobytes())
+    p.stdin.close(); p.wait()
+    return path
+
 def build():
     m = json.load(open(MARK)); sc = json.load(open(SCRIPT2, encoding="utf-8")); clips = []
     def seg(sid): s = sc[sid]; return (["-ss", f"{m[sid] + s.get('from', 0):.3f}", "-t", "{T}", "-i", m.get(sid + "_file", RAW)], s["lines"], s.get("min", 0))
-    for sid in ("boot",):
-        vin, lines, mn = seg(sid); clips.append(make_clip(sid, vin, lines, mn)); print(sid, round(clips[-1][1], 1), flush=True)
-    for grp, keys in (("dom", DOM), ("wld", WLD)):
-        for i, k in enumerate(keys):
-            n, la, lo, _ = INFO[k]; line = f"{n}，{coord_text(la, lo)}。"
+    vin, lines, mn = seg("boot"); clips.append(make_clip("boot", vin, lines, mn)); print("boot", round(clips[-1][1], 1), flush=True)
+    cp = os.path.join(WORK, "concept.mp4")
+    if not os.path.exists(cp) or "--concept" in sys.argv: concept(cp, sc["concept"].get("dur", 14.0))
+    c = sc["concept"]; clips.append(make_clip("concept", ["-t", "{T}", "-i", cp], c["lines"], c.get("min", 0), y_sub=1130)); print("concept", round(clips[-1][1], 1), flush=True)
+    vin, lines, mn = seg("drive"); clips.append(make_clip("drive", vin, lines, mn)); print("drive", round(clips[-1][1], 1), flush=True)
+    for grp, allk, use in (("dom", DOM, sc["dom_use"]), ("wld", WLD, sc["wld_use"])):
+        for j, k in enumerate(use):
+            i = allk.index(k); n, la, lo, _ = INFO[k]; line = f"{n}，{coord_text(la, lo)}。"
             vin = ["-ss", f"{m[grp] + OFF + STEP * i + 0.55:.3f}", "-t", "{T}", "-i", RAW]
-            lines = [{"at": 0.2, "t": line}] if i else [{"at": 0.2, "t": sc[grp + "_intro"]}, {"t": line}]
+            lines = [{"at": 0.2, "t": line}] if j else [{"at": 0.2, "t": sc[grp + "_intro"]}, {"t": line}]
             clips.append(make_clip(f"{grp}{i}", vin, lines, 3.0)); print(k, round(clips[-1][1], 1), flush=True)
-        if grp == "dom":
-            vin, lines, mn = seg("drive"); clips.append(make_clip("drive", vin, lines, mn)); print("drive", round(clips[-1][1], 1), flush=True)
     for sid in ("free", "credit"):
         s = sc[sid]; vin = ["-loop", "1", "-framerate", str(FPS), "-t", "{T}", "-i", card(sid)]
         clips.append(make_clip(sid, vin, s["lines"], s.get("min", 0), y_sub=1090)); print(sid, round(clips[-1][1], 1), flush=True)

@@ -1,23 +1,39 @@
 {
  "boot": {
   "from": 0.5,
-  "min": 6,
+  "min": 8,
   "lines": [
    {
     "at": 0.3,
-    "t": "這是途中。依照你的 GPS 座標，自動找出附近的風景。"
+    "t": "這是途中。手機放在車上，一路開，依照你的 GPS 座標，往前方找風景。走到哪裡，哪裡就有。"
    }
   ]
  },
- "dom_intro": "先看國內。",
- "wld_intro": "再看國際。",
+ "concept": {
+  "dur": 14.0,
+  "min": 14.0,
+  "lines": [
+   {
+    "at": 0.3,
+    "t": "一般的景點 app，找的是你周圍，連剛開過的也找。"
+   },
+   {
+    "at": 4.6,
+    "t": "途中不一樣。行進中，把搜尋往前方推，只找即將到達的風景。"
+   },
+   {
+    "at": 11.4,
+    "t": "開過了，就標示為已通過。"
+   }
+  ]
+ },
  "drive": {
   "from": -2.0,
   "min": 35.5,
   "lines": [
    {
     "at": 0.3,
-    "t": "現在改成開車，模擬時速 100 公里，往太魯閣峽谷開去。"
+    "t": "實際跑一次。模擬時速 100 公里，往太魯閣峽谷開去。"
    },
    {
     "at": 4.4,
@@ -41,6 +57,34 @@
    }
   ]
  },
+ "dom_intro": "走到哪，哪裡就有。座標一換，風景就換。",
+ "wld_intro": "不只台灣，全世界都一樣。",
+ "dom_use": [
+  "qingshui",
+  "qixingtan",
+  "sanxiantai",
+  "lanyu",
+  "eluanbi",
+  "sunmoon",
+  "alishan",
+  "yushan",
+  "hehuan",
+  "gaomei",
+  "jiufen",
+  "shifen",
+  "yehliu",
+  "taipei101",
+  "qimei"
+ ],
+ "wld_use": [
+  "fuji",
+  "kiyomizu",
+  "eiffel",
+  "sydney",
+  "machu",
+  "canyon",
+  "taj"
+ ],
  "free": {
   "min": 9,
   "lines": [
